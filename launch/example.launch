@@ -1,8 +1,0 @@
-<?xml version="1.0"?>
-<launch>
-
-    <node pkg="audibot_twist_controller" type="audibot_twist_node" name="twist_control_node" />
-
-    <include file="$(find audibot_gazebo)/launch/single_vehicle_example.launch" />
-
-</launch>

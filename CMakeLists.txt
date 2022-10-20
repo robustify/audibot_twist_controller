@@ -1,61 +1,37 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.5)
 project(audibot_twist_controller)
 
-# set default build type
-IF(NOT CMAKE_BUILD_TYPE)
-  SET(CMAKE_BUILD_TYPE Release)
-ENDIF(NOT CMAKE_BUILD_TYPE)
+# Default to C++17
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 17)
+endif()
 
-SET(CMAKE_CPP_STANDARD 17)
+find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(rclcpp_components REQUIRED)
+find_package(example_interfaces REQUIRED)
+find_package(geometry_msgs REQUIRED)
 
-find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  dynamic_reconfigure
-)
-
-generate_dynamic_reconfigure_options(
-  cfg/AudibotSpeed.cfg
-)
-
-catkin_package()
-
-include_directories(
-  ${catkin_INCLUDE_DIRS}
-)
-
-add_library(${PROJECT_NAME}
+add_library(${PROJECT_NAME} SHARED
   src/AudibotSpeedNode.cpp
-  src/AudibotSteeringNode.cpp
+  src/AudibotSteerNode.cpp
 )
-add_dependencies(${PROJECT_NAME}
-  ${PROJECT_NAME}_gencfg
+ament_target_dependencies(${PROJECT_NAME}
+  rclcpp
+  rclcpp_components
+  example_interfaces
+  geometry_msgs
 )
-target_link_libraries(${PROJECT_NAME}
-  ${catkin_LIBRARIES}
+target_include_directories(${PROJECT_NAME} PUBLIC
+  $<INSTALL_INTERFACE:include>
 )
-
-add_executable(audibot_speed_node
-  src/audibot_speed_node.cpp
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "${PROJECT_NAME}::AudibotSpeedNode"
+  EXECUTABLE audibot_speed_node
 )
-target_link_libraries(audibot_speed_node
-  ${PROJECT_NAME}
-  ${catkin_LIBRARIES}
-)
-
-add_executable(audibot_steering_node
-  src/audibot_steering_node.cpp
-)
-target_link_libraries(audibot_steering_node
-  ${PROJECT_NAME}
-  ${catkin_LIBRARIES}
-)
-
-add_executable(audibot_twist_node
-  src/audibot_twist_node.cpp
-)
-target_link_libraries(audibot_twist_node
-  ${catkin_LIBRARIES}
-  ${PROJECT_NAME}
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "${PROJECT_NAME}::AudibotSteerNode"
+  EXECUTABLE audibot_steer_node
 )
 
 ### Install Rules
@@ -63,14 +39,16 @@ install(
   TARGETS
     ${PROJECT_NAME}
     audibot_speed_node
-    audibot_steering_node
-    audibot_twist_node
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+    audibot_steer_node
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 
 install(
   DIRECTORY
     launch
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+  DESTINATION share/${PROJECT_NAME}
 )
+
+ament_package()

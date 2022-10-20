@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+
+    <node pkg="audibot_twist_controller" exec="audibot_speed_node" name="speed_control_node" />
+    <node pkg="audibot_twist_controller" exec="audibot_steer_node" name="steer_control_node" />
+
+    <include file="$(find-pkg-share audibot_gazebo)/launch/single_vehicle_example.launch.py" />
+
+</launch>
